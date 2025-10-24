@@ -1,4 +1,3 @@
-// BookingManager.java (Đã thêm chức năng chọn dịch vụ)
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
@@ -13,14 +12,13 @@ public class BookingManager extends JPanel {
     private JTextField customerIdField;
     private JTextField checkInField, checkOutField;
     private JComboBox<String> roomTypeCombo;
-    private JComboBox<RoomItem> roomNumberCombo; // Dùng class RoomItem để lưu ID và Tên
+    private JComboBox<RoomItem> roomNumberCombo; 
     private JButton findRoomsBtn;
 
     private JTable table;
     private DefaultTableModel model;
     private JButton addBtn, updateBtn, deleteBtn, refreshBtn;
 
-    // [MỚI] Components cho Dịch vụ
     private JComboBox<ServiceItem> serviceCombo;
     private JSpinner quantitySpinner;
     private JButton addServiceBtn, removeServiceBtn;
@@ -28,24 +26,18 @@ public class BookingManager extends JPanel {
     private DefaultTableModel bookingServicesModel;
 
 
-    // Fonts và Colors (Tương tự CustomerManager)
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 20);
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_FIELD = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_BUTTON = new Font("Segoe UI", Font.BOLD, 12);
     
     private static final Color COLOR_ADD = new Color(40, 167, 69);
-    // [ĐÃ SỬA] Đổi màu vàng sáng thành màu cam đậm hơn để dễ đọc chữ trắng
     private static final Color COLOR_UPDATE = new Color(255, 152, 0); 
     private static final Color COLOR_DELETE = new Color(220, 53, 69);
     private static final Color COLOR_REFRESH = new Color(23, 162, 184);
     private static final Color COLOR_SEARCH = new Color(0, 123, 255);
 
-    /**
-     * Class nội bộ để lưu ID và Số phòng trong JComboBox
-     */
     private class RoomItem {
-        // ... (existing code) ...
         int id;
         String roomNumber;
 
@@ -56,13 +48,10 @@ public class BookingManager extends JPanel {
 
         @Override
         public String toString() {
-            return roomNumber; // Đây là thứ sẽ hiển thị trong ComboBox
+            return roomNumber; 
         }
     }
 
-    /**
-     * [MỚI] Class nội bộ để lưu ID và Tên Dịch vụ trong JComboBox
-     */
     private class ServiceItem {
         int id;
         String name;
@@ -76,7 +65,6 @@ public class BookingManager extends JPanel {
 
         @Override
         public String toString() {
-            // Hiển thị tên và giá
             return name + " (" + String.format("%,.0f", price) + " VND)";
         }
     }
@@ -87,16 +75,11 @@ public class BookingManager extends JPanel {
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // 1. Tiêu đề (NORTH)
-        // ... (existing code) ...
         JLabel title = new JLabel("QUẢN LÝ ĐẶT PHÒNG", SwingConstants.CENTER);
         title.setFont(FONT_TITLE);
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         add(title, BorderLayout.NORTH);
         
-        // 2. Bảng (CENTER)
-        // Cập nhật cột
-        // ... (existing code) ...
         model = new DefaultTableModel(new String[]{"ID","Customer ID","Số phòng","Loại phòng","Check-in","Check-out","Days","Total"},0);
         table = new JTable(model);
         table.setFont(FONT_FIELD);
@@ -107,41 +90,33 @@ public class BookingManager extends JPanel {
         scroll.getViewport().setBackground(Color.WHITE);
         add(scroll, BorderLayout.CENTER);
 
-        // 3. Panel phía Nam (SOUTH) - Chứa cả Form Booking và Form Dịch vụ
         JPanel southPanel = new JPanel(new BorderLayout(10, 10));
         southPanel.setBackground(Color.WHITE);
 
-        // 3a. Form nhập liệu Booking (Phần trên của South)
         JPanel bookingFormPanel = createBookingFormPanel();
         southPanel.add(bookingFormPanel, BorderLayout.NORTH);
 
-        // 3b. [MỚI] Form nhập liệu Dịch vụ (Phần giữa của South)
         JPanel servicePanel = createServicePanel();
         southPanel.add(servicePanel, BorderLayout.CENTER);
         
-        // 3c. [MỚI] Panel nút CRUD (Phần dưới của South)
         JPanel crudButtonPanel = createCrudButtonPanel();
         southPanel.add(crudButtonPanel, BorderLayout.SOUTH);
 
         add(southPanel, BorderLayout.SOUTH);
         
-        // Load data
-        loadRoomTypes(); // Tải danh sách loại phòng
-        loadServices(); // [MỚI] Tải danh sách dịch vụ
+        loadRoomTypes(); 
+        loadServices(); 
         refreshData();
 
-        // Sự kiện
         findRoomsBtn.addActionListener(e -> updateAvailableRooms());
         addBtn.addActionListener(e -> addBooking());
         updateBtn.addActionListener(e -> updateBooking());
         deleteBtn.addActionListener(e -> deleteBooking());
         refreshBtn.addActionListener(e -> refreshData());
 
-        // [MỚI] Sự kiện cho nút dịch vụ
         addServiceBtn.addActionListener(e -> addServiceToBookingTable());
         removeServiceBtn.addActionListener(e -> removeServiceFromBookingTable());
 
-        // Sự kiện click bảng
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -149,24 +124,19 @@ public class BookingManager extends JPanel {
                 if (row != -1) {
                     customerIdField.setText(model.getValueAt(row, 1).toString());
                     
-                    // Lấy RoomItem từ bảng (đã được lưu khi refreshData)
                     RoomItem selectedRoom = (RoomItem) model.getValueAt(row, 2);
                     String roomType = model.getValueAt(row, 3).toString();
                     
-                    // Format Date to String
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                     checkInField.setText(sdf.format(model.getValueAt(row, 4)));
                     checkOutField.setText(sdf.format(model.getValueAt(row, 5)));
 
-                    // Cập nhật ComboBox
                     roomTypeCombo.setSelectedItem(roomType);
                     
-                    // Hiển thị phòng đang được chọn
                     roomNumberCombo.removeAllItems();
                     roomNumberCombo.addItem(selectedRoom);
                     roomNumberCombo.setSelectedItem(selectedRoom);
 
-                    // [MỚI] Tải dịch vụ cho booking này
                     int bookingId = (int) model.getValueAt(row, 0);
                     loadBookingServices(bookingId);
                 }
@@ -174,9 +144,6 @@ public class BookingManager extends JPanel {
         });
     }
 
-    /**
-     * Tạo panel form cho thông tin đặt phòng (khách, ngày, phòng)
-     */
     private JPanel createBookingFormPanel() {
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
@@ -188,7 +155,6 @@ public class BookingManager extends JPanel {
         gbc.insets = new Insets(5, 10, 5, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Hàng 1: Customer ID và Check-in
         gbc.gridx = 0; gbc.gridy = 0;
         formPanel.add(createLabel("Customer ID:"), gbc);
         gbc.gridx = 1; gbc.gridy = 0;
@@ -199,7 +165,6 @@ public class BookingManager extends JPanel {
         gbc.gridx = 3; gbc.gridy = 0;
         checkInField = createTextField(); formPanel.add(checkInField, gbc);
 
-        // Hàng 2: Loại phòng và Check-out
         gbc.gridx = 0; gbc.gridy = 1;
         formPanel.add(createLabel("Loại phòng:"), gbc);
         gbc.gridx = 1; gbc.gridy = 1;
@@ -210,7 +175,6 @@ public class BookingManager extends JPanel {
         gbc.gridx = 3; gbc.gridy = 1;
         checkOutField = createTextField(); formPanel.add(checkOutField, gbc);
 
-        // Hàng 3: Số phòng và Nút tìm
         gbc.gridx = 0; gbc.gridy = 2;
         formPanel.add(createLabel("Số phòng (trống):"), gbc);
         gbc.gridx = 1; gbc.gridy = 2;
@@ -223,9 +187,6 @@ public class BookingManager extends JPanel {
         return formPanel;
     }
 
-    /**
-     * [MỚI] Tạo panel cho việc thêm/xóa dịch vụ
-     */
     private JPanel createServicePanel() {
         JPanel servicePanel = new JPanel(new BorderLayout(10, 5));
         servicePanel.setBackground(Color.WHITE);
@@ -234,7 +195,6 @@ public class BookingManager extends JPanel {
                 TitledBorder.LEFT, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 14)
         ));
 
-        // Panel Thêm Dịch Vụ (NORTH)
         JPanel addServiceForm = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         addServiceForm.setBackground(Color.WHITE);
         
@@ -251,20 +211,17 @@ public class BookingManager extends JPanel {
 
         servicePanel.add(addServiceForm, BorderLayout.NORTH);
 
-        // Bảng Dịch Vụ Đã Chọn (CENTER)
         bookingServicesModel = new DefaultTableModel(new String[]{"ID Dịch Vụ", "Tên Dịch Vụ", "Số Lượng", "Đơn Giá"}, 0);
         bookingServicesTable = new JTable(bookingServicesModel);
         bookingServicesTable.setFont(FONT_FIELD);
         bookingServicesTable.setRowHeight(25);
-        // Ẩn cột ID
         bookingServicesTable.removeColumn(bookingServicesTable.getColumnModel().getColumn(0));
 
         JScrollPane serviceScroll = new JScrollPane(bookingServicesTable);
         serviceScroll.getViewport().setBackground(Color.WHITE);
-        serviceScroll.setPreferredSize(new Dimension(0, 100)); // Giới hạn chiều cao
+        serviceScroll.setPreferredSize(new Dimension(0, 100)); 
         servicePanel.add(serviceScroll, BorderLayout.CENTER);
 
-        // Panel Nút Xóa (SOUTH)
         JPanel removeServicePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         removeServicePanel.setBackground(Color.WHITE);
         removeServiceBtn = createButton("Xóa Dịch Vụ Đã Chọn", COLOR_DELETE);
@@ -274,9 +231,6 @@ public class BookingManager extends JPanel {
         return servicePanel;
     }
 
-    /**
-     * [MỚI] Tạo panel cho các nút CRUD chính
-     */
     private JPanel createCrudButtonPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
@@ -294,8 +248,6 @@ public class BookingManager extends JPanel {
         return buttonPanel;
     }
     
-    // Helper tạo components
-    // ... (existing code) ...
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(FONT_LABEL);
@@ -314,9 +266,6 @@ public class BookingManager extends JPanel {
         button.setBackground(color);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-
-        // [ĐÃ SỬA] Thêm 2 dòng này để đảm bảo màu nền và chữ hiển thị đúng
-        // trên các Look & Feel khác nhau (như Windows)
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setOpaque(true);
         button.setBorderPainted(false);
@@ -333,7 +282,7 @@ public class BookingManager extends JPanel {
             roomTypeCombo.setSelectedIndex(0);
         }
         roomNumberCombo.removeAllItems();
-        bookingServicesModel.setRowCount(0); // [MỚI] Xóa bảng dịch vụ
+        bookingServicesModel.setRowCount(0); 
         if (serviceCombo.getItemCount() > 0) {
              serviceCombo.setSelectedIndex(0);
         }
@@ -341,8 +290,6 @@ public class BookingManager extends JPanel {
         table.clearSelection();
     }
 
-    // [MỚI] Tải các loại phòng
-    // ... (existing code) ...
     private void loadRoomTypes() {
         try (Connection c = DBConnection.getConnection();
              Statement st = c.createStatement();
@@ -357,7 +304,6 @@ public class BookingManager extends JPanel {
         }
     }
 
-    // [MỚI] Tải danh sách dịch vụ vào ComboBox
     private void loadServices() {
         try (Connection c = DBConnection.getConnection();
              Statement st = c.createStatement();
@@ -376,14 +322,11 @@ public class BookingManager extends JPanel {
         }
     }
 
-    // [MỚI] Cập nhật danh sách phòng trống
-    // ... (existing code) ...
     private void updateAvailableRooms() {
         String type = roomTypeCombo.getSelectedItem().toString();
         java.sql.Date sqlCheckIn, sqlCheckOut;
 
         try {
-            // Chuyển đổi ngày
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             java.util.Date checkIn = sdf.parse(checkInField.getText());
             java.util.Date checkOut = sdf.parse(checkOutField.getText());
@@ -394,7 +337,6 @@ public class BookingManager extends JPanel {
             return;
         }
 
-        // Kiểm tra xem có đang update không
         int currentBookingId = -1;
         int selectedRow = table.getSelectedRow();
         if (selectedRow != -1) {
@@ -404,12 +346,6 @@ public class BookingManager extends JPanel {
         roomNumberCombo.removeAllItems();
         
         try (Connection c = DBConnection.getConnection()) {
-            // Câu SQL này tìm các phòng:
-            // 1. Đúng loại (type)
-            // 2. KHÔNG nằm trong bất kỳ booking nào
-            //    mà khoảng thời gian (check_in, check_out) của booking đó
-            //    CHỒNG LÊN khoảng thời gian đang chọn (sqlCheckIn, sqlCheckOut)
-            // 3. TRỪ booking hiện tại đang chọn (nếu có)
             String sql = "SELECT id, room_number FROM rooms " +
                          "WHERE type = ? AND id NOT IN (" +
                          "  SELECT room_id FROM bookings " +
@@ -417,9 +353,9 @@ public class BookingManager extends JPanel {
                          ")";
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setString(1, type);
-            ps.setDate(2, sqlCheckOut); // check_in của booking < check_out mới
-            ps.setDate(3, sqlCheckIn);  // check_out của booking > check_in mới
-            ps.setInt(4, currentBookingId); // Bỏ qua booking đang sửa
+            ps.setDate(2, sqlCheckOut); 
+            ps.setDate(3, sqlCheckIn);  
+            ps.setInt(4, currentBookingId); 
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -431,7 +367,6 @@ public class BookingManager extends JPanel {
         }
     }
 
-    // [MỚI] Thêm dịch vụ vào bảng tạm
     private void addServiceToBookingTable() {
         ServiceItem selectedService = (ServiceItem) serviceCombo.getSelectedItem();
         int quantity = (int) quantitySpinner.getValue();
@@ -440,7 +375,6 @@ public class BookingManager extends JPanel {
             return;
         }
 
-        // Thêm vào model của bảng dịch vụ
         bookingServicesModel.addRow(new Object[]{
             selectedService.id,
             selectedService.name,
@@ -449,7 +383,6 @@ public class BookingManager extends JPanel {
         });
     }
 
-    // [MỚI] Xóa dịch vụ khỏi bảng tạm
     private void removeServiceFromBookingTable() {
         int selectedRow = bookingServicesTable.getSelectedRow();
         if (selectedRow != -1) {
@@ -459,9 +392,8 @@ public class BookingManager extends JPanel {
         }
     }
 
-    // [MỚI] Tải các dịch vụ đã đăng ký của một booking
     private void loadBookingServices(int bookingId) {
-        bookingServicesModel.setRowCount(0); // Xóa bảng tạm
+        bookingServicesModel.setRowCount(0); 
         try (Connection c = DBConnection.getConnection()) {
             String sql = "SELECT s.id, s.name, u.quantity, s.price " +
                          "FROM service_usage u JOIN services s ON u.service_id = s.id " +
@@ -482,7 +414,6 @@ public class BookingManager extends JPanel {
         }
     }
 
-    // [MỚI] Lưu các dịch vụ trong bảng tạm vào CSDL (dùng cho Thêm và Sửa)
     private void saveServices(Connection c, int bookingId) throws SQLException {
         String sql = "INSERT INTO service_usage (booking_id, service_id, quantity) VALUES (?, ?, ?)";
         try (PreparedStatement ps = c.prepareStatement(sql)) {
@@ -500,7 +431,6 @@ public class BookingManager extends JPanel {
     }
 
 
-    // Các hàm logic (Đã cập nhật với Transaction)
     private void addBooking() {
         RoomItem selectedRoom = (RoomItem) roomNumberCombo.getSelectedItem();
         if (selectedRoom == null) {
@@ -508,12 +438,11 @@ public class BookingManager extends JPanel {
             return;
         }
 
-        Connection c = null; // Khai báo bên ngoài để dùng trong finally
+        Connection c = null; 
         try {
             c = DBConnection.getConnection();
-            c.setAutoCommit(false); // Bắt đầu Transaction
+            c.setAutoCommit(false); 
 
-            // --- Bước 1: Thêm Booking ---
             String sql = "INSERT INTO bookings (customer_id, room_id, check_in, check_out, total_days, total_cost) VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             
@@ -524,7 +453,7 @@ public class BookingManager extends JPanel {
 
             long diff = checkOut.getTime() - checkIn.getTime();
             int days = (int)(diff/(1000*60*60*24));
-            double pricePerNight = getRoomPrice(roomId); // Hàm này có thể cần Connection
+            double pricePerNight = getRoomPrice(roomId); 
             double total = days * pricePerNight;
 
             ps.setInt(1, customerId);
@@ -535,15 +464,13 @@ public class BookingManager extends JPanel {
             ps.setDouble(6, total);
             ps.executeUpdate();
 
-            // --- Bước 2: Lấy Booking ID vừa tạo ---
             ResultSet generatedKeys = ps.getGeneratedKeys();
             if (generatedKeys.next()) {
                 int newBookingId = generatedKeys.getInt(1);
                 
-                // --- Bước 3: Lưu Dịch Vụ ---
                 saveServices(c, newBookingId);
 
-                c.commit(); // Hoàn tất Transaction
+                c.commit(); 
                 JOptionPane.showMessageDialog(this,"✅ Đã thêm booking và dịch vụ");
             } else {
                 throw new SQLException("Tạo booking thất bại, không lấy được ID.");
@@ -554,7 +481,7 @@ public class BookingManager extends JPanel {
         } catch(Exception e){
             e.printStackTrace();
             try {
-                if (c != null) c.rollback(); // Hoàn tác nếu lỗi
+                if (c != null) c.rollback(); 
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -572,7 +499,6 @@ public class BookingManager extends JPanel {
     }
 
     private double getRoomPrice(int roomId) {
-        // ... (existing code) ...
         double price = 0;
         try (Connection c = DBConnection.getConnection()) {
             PreparedStatement ps = c.prepareStatement("SELECT price_per_night FROM rooms WHERE id=?");
@@ -601,9 +527,8 @@ public class BookingManager extends JPanel {
         Connection c = null;
         try {
             c = DBConnection.getConnection();
-            c.setAutoCommit(false); // Bắt đầu Transaction
+            c.setAutoCommit(false); 
 
-            // --- Bước 1: Cập nhật Booking ---
             String sql = "UPDATE bookings SET customer_id=?, room_id=?, check_in=?, check_out=?, total_days=?, total_cost=? WHERE id=?";
             PreparedStatement ps = c.prepareStatement(sql);
             
@@ -620,15 +545,13 @@ public class BookingManager extends JPanel {
             ps.setInt(5,days); ps.setDouble(6,total); ps.setInt(7,bookingId);
             ps.executeUpdate();
 
-            // --- Bước 2: Xóa Dịch Vụ Cũ ---
             PreparedStatement deletePs = c.prepareStatement("DELETE FROM service_usage WHERE booking_id = ?");
             deletePs.setInt(1, bookingId);
             deletePs.executeUpdate();
 
-            // --- Bước 3: Thêm Dịch Vụ Mới ---
             saveServices(c, bookingId);
 
-            c.commit(); // Hoàn tất Transaction
+            c.commit(); 
             JOptionPane.showMessageDialog(this, "✅ Cập nhật booking và dịch vụ thành công!");
             
             refreshData();
@@ -636,7 +559,7 @@ public class BookingManager extends JPanel {
         } catch(Exception e){ 
             e.printStackTrace();
              try {
-                if (c != null) c.rollback(); // Hoàn tác nếu lỗi
+                if (c != null) c.rollback(); 
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -670,24 +593,21 @@ public class BookingManager extends JPanel {
         Connection c = null;
         try {
             c = DBConnection.getConnection();
-            c.setAutoCommit(false); // Bắt đầu Transaction
+            c.setAutoCommit(false); 
 
-            // --- Bước 1: Xóa Dịch Vụ ---
             PreparedStatement deleteServices = c.prepareStatement("DELETE FROM service_usage WHERE booking_id = ?");
             deleteServices.setInt(1, bookingId);
             deleteServices.executeUpdate();
 
-            // --- Bước 2: Xóa Hóa Đơn (Nếu có) ---
             PreparedStatement deleteInvoices = c.prepareStatement("DELETE FROM invoices WHERE booking_id = ?");
             deleteInvoices.setInt(1, bookingId);
             deleteInvoices.executeUpdate();
 
-            // --- Bước 3: Xóa Booking ---
             PreparedStatement deleteBooking = c.prepareStatement("DELETE FROM bookings WHERE id=?");
             deleteBooking.setInt(1, bookingId);
             deleteBooking.executeUpdate();
 
-            c.commit(); // Hoàn tất Transaction
+            c.commit(); 
             JOptionPane.showMessageDialog(this, "✅ Đã xóa booking và các dữ liệu liên quan.");
             
             refreshData();
@@ -695,7 +615,7 @@ public class BookingManager extends JPanel {
         } catch(Exception e){ 
             e.printStackTrace();
             try {
-                if (c != null) c.rollback(); // Hoàn tác nếu lỗi
+                if (c != null) c.rollback(); 
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -715,17 +635,14 @@ public class BookingManager extends JPanel {
     }
 
     private void refreshData() {
-        // ... (existing code) ...
         try(Connection c = DBConnection.getConnection();
             Statement st = c.createStatement();
-            // Cập nhật câu SQL để JOIN với bảng rooms
              ResultSet rs = st.executeQuery(
                  "SELECT b.id, b.customer_id, b.room_id, r.room_number, r.type, b.check_in, b.check_out, b.total_days, b.total_cost " +
                  "FROM bookings b JOIN rooms r ON b.room_id = r.id"
              )) {
             model.setRowCount(0);
             while(rs.next()) {
-                // Thêm RoomItem vào cột "Số phòng"
                 model.addRow(new Object[]{
                         rs.getInt("id"), 
                         rs.getInt("customer_id"), 

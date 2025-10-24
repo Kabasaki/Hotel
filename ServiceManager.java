@@ -13,7 +13,6 @@ public class ServiceManager extends JPanel {
     private DefaultTableModel model;
     private JButton addBtn, updateBtn, deleteBtn, refreshBtn;
 
-    // Fonts và Colors (Tương tự CustomerManager)
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 20);
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_FIELD = new Font("Segoe UI", Font.PLAIN, 14);
@@ -25,18 +24,15 @@ public class ServiceManager extends JPanel {
     private static final Color COLOR_REFRESH = new Color(23, 162, 184);
 
     public ServiceManager() {
-        // Sử dụng layout tương tự các panel quản lý khác
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // 1. Tiêu đề (NORTH)
         JLabel title = new JLabel("QUẢN LÝ DỊCH VỤ", SwingConstants.CENTER);
         title.setFont(FONT_TITLE);
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
-        // 2. Bảng (CENTER)
         model = new DefaultTableModel(new String[]{"ID", "Tên dịch vụ", "Giá (VND)"}, 0);
         table = new JTable(model);
         table.setFont(FONT_FIELD);
@@ -47,7 +43,6 @@ public class ServiceManager extends JPanel {
         scroll.getViewport().setBackground(Color.WHITE);
         add(scroll, BorderLayout.CENTER);
 
-        // 3. Form nhập liệu (EAST)
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(BorderFactory.createTitledBorder(
@@ -71,7 +66,6 @@ public class ServiceManager extends JPanel {
         gbc.gridx = 1; gbc.gridy = 1;
         priceField = createTextField(); formPanel.add(priceField, gbc);
 
-        // Nút CRUD
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         buttonPanel.setBackground(Color.WHITE);
         
@@ -90,16 +84,13 @@ public class ServiceManager extends JPanel {
         
         add(formPanel, BorderLayout.EAST);
 
-        // Load data
         refreshData();
         
-        // Sự kiện
         addBtn.addActionListener(e -> addService());
         updateBtn.addActionListener(e -> updateService());
         deleteBtn.addActionListener(e -> deleteService());
         refreshBtn.addActionListener(e -> refreshData());
 
-        // Sự kiện click bảng
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -112,7 +103,6 @@ public class ServiceManager extends JPanel {
         });
     }
 
-    // Helper tạo components (copy từ CustomerManager cho nhất quán)
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(FONT_LABEL);
@@ -131,9 +121,6 @@ public class ServiceManager extends JPanel {
         button.setBackground(color);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-
-        // [ĐÃ SỬA] Thêm 2 dòng này để đảm bảo màu nền và chữ hiển thị đúng
-        // trên các Look & Feel khác nhau (như Windows)
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setOpaque(true);
         button.setBorderPainted(false);
@@ -148,7 +135,6 @@ public class ServiceManager extends JPanel {
         table.clearSelection();
     }
 
-    // Các hàm xử lý logic
     private void addService() {
         try (Connection c = DBConnection.getConnection()) {
             PreparedStatement ps = c.prepareStatement("INSERT INTO services (name, price) VALUES (?, ?)");

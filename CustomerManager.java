@@ -1,4 +1,3 @@
-// CustomerManager.java (Đã chỉnh sửa với layout mới)
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -13,7 +12,6 @@ public class CustomerManager extends JPanel {
     private DefaultTableModel model;
     private JButton addBtn, updateBtn, delBtn, refreshBtn, searchBtn;
 
-    // Fonts và Colors
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 20);
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_FIELD = new Font("Segoe UI", Font.PLAIN, 14);
@@ -26,18 +24,15 @@ public class CustomerManager extends JPanel {
     private static final Color COLOR_SEARCH = new Color(0, 123, 255);
 
     public CustomerManager() {
-        // Sử dụng BorderLayout
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // 1. Tiêu đề (NORTH)
         JLabel title = new JLabel("QUẢN LÝ KHÁCH HÀNG", SwingConstants.CENTER);
         title.setFont(FONT_TITLE);
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
-        // 2. Bảng dữ liệu (CENTER)
         model = new DefaultTableModel(new String[]{"ID", "Tên KH", "SĐT", "Email", "Địa chỉ"}, 0);
         table = new JTable(model);
         table.setFont(FONT_FIELD);
@@ -48,12 +43,10 @@ public class CustomerManager extends JPanel {
         scroll.getViewport().setBackground(Color.WHITE);
         add(scroll, BorderLayout.CENTER);
 
-        // 3. Panel Form và Chức năng (EAST)
         JPanel eastPanel = new JPanel(new BorderLayout(10, 10));
         eastPanel.setBackground(Color.WHITE);
-        eastPanel.setPreferredSize(new Dimension(350, 0)); // Set chiều rộng ưu tiên
+        eastPanel.setPreferredSize(new Dimension(350, 0));
 
-        // 3a. Form nhập liệu
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(BorderFactory.createTitledBorder(
@@ -85,7 +78,6 @@ public class CustomerManager extends JPanel {
         gbc.gridx = 1; gbc.gridy = 3;
         addrField = createTextField(); formPanel.add(addrField, gbc);
         
-        // Nút CRUD
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         buttonPanel.setBackground(Color.WHITE);
         
@@ -104,7 +96,6 @@ public class CustomerManager extends JPanel {
 
         eastPanel.add(formPanel, BorderLayout.NORTH);
 
-        // 3b. Panel Tìm kiếm
         JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
         searchPanel.setBackground(Color.WHITE);
         searchPanel.setBorder(BorderFactory.createTitledBorder(
@@ -120,17 +111,14 @@ public class CustomerManager extends JPanel {
         
         add(eastPanel, BorderLayout.EAST);
 
-        // Load dữ liệu
         refreshData();
 
-        // Thêm sự kiện
         addBtn.addActionListener(e -> addCustomer());
         updateBtn.addActionListener(e -> updateCustomer());
         delBtn.addActionListener(e -> deleteCustomer());
         refreshBtn.addActionListener(e -> refreshData());
         searchBtn.addActionListener(e -> searchCustomer());
         
-        // Sự kiện click vào bảng
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -145,7 +133,6 @@ public class CustomerManager extends JPanel {
         });
     }
     
-    // Helper tạo components
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(FONT_LABEL);
@@ -164,9 +151,6 @@ public class CustomerManager extends JPanel {
         button.setBackground(color);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-
-        // [ĐÃ SỬA] Thêm 2 dòng này để đảm bảo màu nền và chữ hiển thị đúng
-        // trên các Look & Feel khác nhau (như Windows)
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setOpaque(true);
         button.setBorderPainted(false);
@@ -175,7 +159,6 @@ public class CustomerManager extends JPanel {
         return button;
     }
 
-    // Các hàm xử lý logic (giữ nguyên)
     private void addCustomer() {
         try (Connection c = DBConnection.getConnection()) {
             PreparedStatement ps = c.prepareStatement("INSERT INTO customers (name, phone, email, address) VALUES (?, ?, ?, ?)");

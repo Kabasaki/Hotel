@@ -11,29 +11,25 @@ public class MainApp extends JFrame {
     public MainApp() {
         setTitle("HỆ THỐNG QUẢN LÝ KHÁCH SẠN");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // Kích thước lớn hơn cho giao diện chính
         setSize(1200, 800);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Thanh trên cùng (header)
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(52, 58, 64)); // Màu nền tối
+        topPanel.setBackground(new Color(52, 58, 64)); 
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
-        // Lấy tên người dùng từ SessionManager
         String currentUser = SessionManager.getUsername();
         String userRole = SessionManager.getRole();
         
         welcomeLabel = new JLabel("Xin chào, " + (currentUser != null ? currentUser : "Người dùng") + " (" + userRole + ")");
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        welcomeLabel.setForeground(Color.WHITE); // Chữ trắng
+        welcomeLabel.setForeground(Color.WHITE); 
         topPanel.add(welcomeLabel, BorderLayout.WEST);
 
-        // Nút đăng xuất (bên phải)
         logoutButton = new JButton("Đăng xuất");
         logoutButton.setFocusPainted(false);
-        logoutButton.setBackground(new Color(220, 53, 69)); // Màu đỏ
+        logoutButton.setBackground(new Color(220, 53, 69)); 
         logoutButton.setForeground(Color.BLACK);
         logoutButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         logoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -44,19 +40,16 @@ public class MainApp extends JFrame {
         topPanel.add(logoutButton, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
-        // Nội dung chính với các Tab
         JTabbedPane tab = new JTabbedPane();
         tab.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        tab.setTabPlacement(JTabbedPane.LEFT); // Đặt tab bên trái cho hiện đại hơn
+        tab.setTabPlacement(JTabbedPane.LEFT); 
         tab.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Thêm các tab
         tab.add("Khách hàng", new CustomerManager());
         tab.add("Đặt phòng", new BookingManager());
-        tab.add("Dịch vụ", new ServiceManager()); // Thêm file ServiceManager
+        tab.add("Dịch vụ", new ServiceManager()); 
         tab.add("Hóa đơn / Thống kê", new InvoiceManager());
         
-        // Chỉ thêm tab Nhân sự nếu có quyền "admin" (phân biệt hoa thường)
         if ("Admin".equalsIgnoreCase(userRole)) {
             tab.add("Nhân sự", new EmployeeManager());
         }
@@ -65,13 +58,8 @@ public class MainApp extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Đảm bảo L&F đã được set trong LoginForm
         SwingUtilities.invokeLater(() -> {
-            // Chỉ chạy MainApp nếu đã đăng nhập (dành cho test)
-            // Trong thực tế, luôn chạy từ LoginForm
-            // new MainApp().setVisible(true);
             
-            // Chạy LoginForm làm điểm bắt đầu
             LoginForm.main(args);
         });
     }

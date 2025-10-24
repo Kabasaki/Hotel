@@ -26,28 +26,25 @@ public class LoginForm extends JFrame {
 
     public LoginForm() {
         setTitle("Đăng nhập hệ thống");
-        setSize(450, 400); // Tăng kích thước
+        setSize(650, 600); // Tăng kích thước
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
-        // Sử dụng GridBagLayout để căn giữa và linh hoạt
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8); // Khoảng cách giữa các component
+        gbc.insets = new Insets(8, 8, 8, 8); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Tiêu đề
         JLabel title = new JLabel("ĐĂNG NHẬP", SwingConstants.CENTER);
         title.setFont(FONT_TITLE);
         title.setForeground(TEXT_COLOR);
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2; // Kéo dài 2 cột
+        gbc.gridwidth = 2; 
         mainPanel.add(title, gbc);
 
-        // Tài khoản
         JLabel userLabel = new JLabel("Tài khoản:");
         userLabel.setFont(FONT_LABEL);
         gbc.gridx = 0;
@@ -55,13 +52,12 @@ public class LoginForm extends JFrame {
         gbc.gridwidth = 1;
         mainPanel.add(userLabel, gbc);
 
-        userField = new JTextField(20); // Kích thước ưu tiên
+        userField = new JTextField(20); 
         userField.setFont(FONT_FIELD);
         gbc.gridx = 1;
         gbc.gridy = 1;
         mainPanel.add(userField, gbc);
 
-        // Mật khẩu
         JLabel passLabel = new JLabel("Mật khẩu:");
         passLabel.setFont(FONT_LABEL);
         gbc.gridx = 0;
@@ -74,7 +70,6 @@ public class LoginForm extends JFrame {
         gbc.gridy = 2;
         mainPanel.add(passField, gbc);
 
-        // Nút Đăng nhập
         loginBtn = new JButton("Đăng nhập");
         styleButton(loginBtn, PRIMARY_COLOR);
         gbc.gridx = 0;
@@ -83,33 +78,27 @@ public class LoginForm extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(loginBtn, gbc);
 
-        // Nút Đăng ký
         registerBtn = new JButton("Đăng ký");
         styleButton(registerBtn, SECONDARY_COLOR);
         gbc.gridx = 0;
         gbc.gridy = 4;
         mainPanel.add(registerBtn, gbc);
 
-        // Thông báo
         message = new JLabel("", SwingConstants.CENTER);
         message.setFont(FONT_LABEL);
         gbc.gridx = 0;
         gbc.gridy = 5;
         mainPanel.add(message, gbc);
         
-        // Thêm panel chính vào frame
         add(mainPanel);
 
-        // Thêm sự kiện
         loginBtn.addActionListener(e -> checkLogin());
         registerBtn.addActionListener(e -> openRegisterForm());
         
-        // Thêm sự kiện nhấn Enter
         passField.addActionListener(e -> loginBtn.doClick());
         userField.addActionListener(e -> passField.requestFocus());
     }
 
-    // Helper để tạo kiểu cho nút
     private void styleButton(JButton button, Color background) {
         button.setFont(FONT_BUTTON);
         button.setBackground(background);
@@ -130,7 +119,6 @@ public class LoginForm extends JFrame {
         }
 
         try (Connection conn = DBConnection.getConnection()) {
-            // Bước 1: Xác thực người dùng trong bảng 'users'
             String sql = "SELECT * FROM users WHERE username=? AND password=?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, username);
@@ -138,7 +126,6 @@ public class LoginForm extends JFrame {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                // Bước 2: Đăng nhập thành công, lấy vai trò từ bảng 'employees'
                 String role = "User"; // Vai trò mặc định nếu không tìm thấy
                 String roleSql = "SELECT r.role_name FROM employees e JOIN roles r ON e.role_id = r.id WHERE e.username = ?";
                 PreparedStatement rolePs = conn.prepareStatement(roleSql);
@@ -148,10 +135,8 @@ public class LoginForm extends JFrame {
                     role = roleRs.getString("role_name");
                 }
 
-                // Bước 3: Lưu thông tin vào SessionManager
                 SessionManager.setUser(username, role);
 
-                // Mở cửa sổ chính và đóng cửa sổ đăng nhập
                 dispose();
                 new MainApp().setVisible(true);
             } else {
@@ -170,13 +155,11 @@ public class LoginForm extends JFrame {
 
     public static void main(String[] args) {
         try {
-            // Áp dụng Look and Feel của hệ thống (Windows, macOS, Linux)
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // Khởi tạo bảng trước khi chạy
         DBConnection.initTables();
         SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
     }

@@ -1,4 +1,3 @@
-// EmployeeManager.java (Đã chỉnh sửa với layout mới)
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
@@ -15,7 +14,6 @@ public class EmployeeManager extends JPanel {
     private DefaultTableModel model;
     private JButton addBtn, updateBtn, deleteBtn, refreshBtn;
     
-    // Fonts và Colors (Tương tự CustomerManager)
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 20);
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_FIELD = new Font("Segoe UI", Font.PLAIN, 14);
@@ -27,18 +25,15 @@ public class EmployeeManager extends JPanel {
     private static final Color COLOR_REFRESH = new Color(23, 162, 184);
 
     public EmployeeManager() {
-        // Tương tự CustomerManager, dùng BorderLayout và Form bên phải (EAST)
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // 1. Tiêu đề (NORTH)
         JLabel title = new JLabel("QUẢN LÝ NHÂN SỰ", SwingConstants.CENTER);
         title.setFont(FONT_TITLE);
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
-        // 2. Bảng (CENTER)
         model = new DefaultTableModel(new String[]{"ID","Tên","Email","SĐT","Username","Vai trò"},0);
         table = new JTable(model);
         table.setFont(FONT_FIELD);
@@ -49,14 +44,13 @@ public class EmployeeManager extends JPanel {
         scroll.getViewport().setBackground(Color.WHITE);
         add(scroll, BorderLayout.CENTER);
 
-        // 3. Form nhập liệu (EAST)
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(), "Thông tin nhân viên",
                 TitledBorder.LEFT, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 14)
         ));
-        formPanel.setPreferredSize(new Dimension(350, 0)); // Set chiều rộng
+        formPanel.setPreferredSize(new Dimension(350, 0)); 
         
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -93,7 +87,6 @@ public class EmployeeManager extends JPanel {
         gbc.gridx = 1; gbc.gridy = 5;
         roleCombo = new JComboBox<>(); roleCombo.setFont(FONT_FIELD); formPanel.add(roleCombo, gbc);
         
-        // Nút CRUD
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         buttonPanel.setBackground(Color.WHITE);
         
@@ -112,17 +105,14 @@ public class EmployeeManager extends JPanel {
         
         add(formPanel, BorderLayout.EAST);
 
-        // Load data
         loadRoles();
         refreshData();
         
-        // Sự kiện
         addBtn.addActionListener(e -> addEmployee());
         updateBtn.addActionListener(e -> updateEmployee());
         deleteBtn.addActionListener(e -> deleteEmployee());
         refreshBtn.addActionListener(e -> refreshData());
 
-        // Sự kiện click bảng
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -139,7 +129,6 @@ public class EmployeeManager extends JPanel {
         });
     }
     
-    // Helper tạo components (copy từ CustomerManager cho nhất quán)
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(FONT_LABEL);
@@ -158,9 +147,6 @@ public class EmployeeManager extends JPanel {
         button.setBackground(color);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-
-        // [ĐÃ SỬA] Thêm 2 dòng này để đảm bảo màu nền và chữ hiển thị đúng
-        // trên các Look & Feel khác nhau (như Windows)
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setOpaque(true);
         button.setBorderPainted(false);
@@ -179,7 +165,6 @@ public class EmployeeManager extends JPanel {
         table.clearSelection();
     }
 
-    // Các hàm logic (giữ nguyên, thêm clearFields)
     private void loadRoles() {
         try(Connection c = DBConnection.getConnection();
             Statement st = c.createStatement();
@@ -249,7 +234,6 @@ public class EmployeeManager extends JPanel {
             return;
         }
         
-        // Nếu không nhập mật khẩu mới, giữ nguyên mật khẩu cũ
         if (newPassword.isEmpty()) {
              try(Connection c = DBConnection.getConnection()) {
                 PreparedStatement ps = c.prepareStatement("SELECT password FROM employees WHERE id=?");

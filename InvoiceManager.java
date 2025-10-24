@@ -11,7 +11,6 @@ public class InvoiceManager extends JPanel {
     private DefaultTableModel model;
     private JButton generateBtn, refreshBtn;
     
-    // Fonts và Colors (Tương tự)
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 20);
     private static final Font FONT_FIELD = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_BUTTON = new Font("Segoe UI", Font.BOLD, 12);
@@ -24,13 +23,11 @@ public class InvoiceManager extends JPanel {
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // 1. Tiêu đề (NORTH)
         JLabel title = new JLabel("HÓA ĐƠN & THỐNG KÊ", SwingConstants.CENTER);
         title.setFont(FONT_TITLE);
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
-        // 2. Bảng (CENTER)
         model = new DefaultTableModel(new String[]{"ID", "BookingID", "Tổng phòng", "Tổng dịch vụ", "Tổng hóa đơn", "Ngày tạo"}, 0);
         table = new JTable(model);
         table.setFont(FONT_FIELD);
@@ -41,7 +38,6 @@ public class InvoiceManager extends JPanel {
         scroll.getViewport().setBackground(Color.WHITE);
         add(scroll, BorderLayout.CENTER);
 
-        // 3. Panel Nút (SOUTH)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
         
@@ -53,10 +49,8 @@ public class InvoiceManager extends JPanel {
         
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Load data
         refreshData();
 
-        // Sự kiện
         generateBtn.addActionListener(e -> generateInvoices());
         refreshBtn.addActionListener(e -> refreshData());
     }
@@ -67,9 +61,6 @@ public class InvoiceManager extends JPanel {
         button.setBackground(color);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-
-        // [ĐÃ SỬA] Thêm 2 dòng này để đảm bảo màu nền và chữ hiển thị đúng
-        // trên các Look & Feel khác nhau (như Windows)
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setOpaque(true);
         button.setBorderPainted(false);
@@ -77,11 +68,9 @@ public class InvoiceManager extends JPanel {
         button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         return button;
     }
-    // Các hàm logic (giữ nguyên)
     private void generateInvoices() {
         try (Connection c = DBConnection.getConnection()) {
             Statement st = c.createStatement();
-            // Chỉ lấy các booking CHƯA có trong bảng invoices
             ResultSet bookings = st.executeQuery(
                 "SELECT * FROM bookings b WHERE NOT EXISTS (SELECT 1 FROM invoices i WHERE i.booking_id = b.id)"
             );
@@ -99,7 +88,6 @@ public class InvoiceManager extends JPanel {
 
                 double totalAmount = roomTotal + serviceTotal;
 
-                // Không cần check nữa vì câu SQL đã lọc
                 PreparedStatement insert = c.prepareStatement(
                         "INSERT INTO invoices (booking_id, total_room, total_service, total_amount, date_created) VALUES (?,?,?,?,?)");
                 insert.setInt(1, bookingId);
