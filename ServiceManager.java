@@ -1,4 +1,3 @@
-// ServiceManager.java (Đã cập nhật, không còn là placeholder)
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
@@ -19,7 +18,7 @@ public class ServiceManager extends JPanel {
     private static final Font FONT_BUTTON = new Font("Segoe UI", Font.BOLD, 12);
     
     private static final Color COLOR_ADD = new Color(40, 167, 69);
-    private static final Color COLOR_UPDATE = new Color(255, 193, 7);
+    private static final Color COLOR_UPDATE = new Color(255, 152, 0); 
     private static final Color COLOR_DELETE = new Color(220, 53, 69);
     private static final Color COLOR_REFRESH = new Color(23, 162, 184);
 
@@ -33,7 +32,12 @@ public class ServiceManager extends JPanel {
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new String[]{"ID", "Tên dịch vụ", "Giá (VND)"}, 0);
+        model = new DefaultTableModel(new String[]{"ID", "Tên dịch vụ", "Giá (VND)"}, 0) {
+             @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        };
         table = new JTable(model);
         table.setFont(FONT_FIELD);
         table.setRowHeight(25);
@@ -49,7 +53,7 @@ public class ServiceManager extends JPanel {
                 BorderFactory.createEtchedBorder(), "Thông tin dịch vụ",
                 TitledBorder.LEFT, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 14)
         ));
-        formPanel.setPreferredSize(new Dimension(350, 0)); // Set chiều rộng
+        formPanel.setPreferredSize(new Dimension(350, 0)); 
         
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -57,12 +61,12 @@ public class ServiceManager extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(createLabel("Tên dịch vụ:"), gbc);
+        formPanel.add(createLabel("Tên dịch vụ (*):"), gbc);
         gbc.gridx = 1; gbc.gridy = 0;
         nameField = createTextField(); formPanel.add(nameField, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1;
-        formPanel.add(createLabel("Giá:"), gbc);
+        formPanel.add(createLabel("Giá (*):"), gbc);
         gbc.gridx = 1; gbc.gridy = 1;
         priceField = createTextField(); formPanel.add(priceField, gbc);
 
@@ -97,7 +101,7 @@ public class ServiceManager extends JPanel {
                 int row = table.getSelectedRow();
                 if (row != -1) {
                     nameField.setText(model.getValueAt(row, 1).toString());
-                    priceField.setText(model.getValueAt(row, 2).toString());
+                    priceField.setText(String.format("%.0f", model.getValueAt(row, 2)));
                 }
             }
         });
@@ -136,17 +140,35 @@ public class ServiceManager extends JPanel {
     }
 
     private void addService() {
+        String name = nameField.getText().trim();
+        String priceStr = priceField.getText().trim();
+
+        if (name.isEmpty() || priceStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên dịch vụ (*) và Giá (*) là bắt buộc.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         try (Connection c = DBConnection.getConnection()) {
             PreparedStatement ps = c.prepareStatement("INSERT INTO services (name, price) VALUES (?, ?)");
-            ps.setString(1, nameField.getText());
-            ps.setDouble(2, Double.parseDouble(priceField.getText()));
+            ps.setString(1, name);
+            ps.setDouble(2, Double.parseDouble(priceStr));
             ps.executeUpdate();
+            
+            JOptionPane.showMessageDialog(this, "✅ Đã thêm dịch vụ thành công!");
             refreshData();
             clearFields();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Giá phải là một con số.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Giá phải là một con số hợp lệ (ví dụ: 50000).", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062) { 
+                 JOptionPane.showMessageDialog(this, "Lỗi: Tên dịch vụ này đã tồn tại.", "Trùng lặp dữ liệu", JOptionPane.ERROR_MESSAGE);
+            } else {
+                 JOptionPane.showMessageDialog(this, "Lỗi khi thêm: " + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
+            }
+            e.printStackTrace();
         } catch (Exception e) { 
             e.printStackTrace(); 
+            JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -156,19 +178,38 @@ public class ServiceManager extends JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn dịch vụ để sửa.", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        
+        String name = nameField.getText().trim();
+        String priceStr = priceField.getText().trim();
+        
+        if (name.isEmpty() || priceStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên dịch vụ (*) và Giá (*) là bắt buộc.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         int id = Integer.parseInt(model.getValueAt(row, 0).toString());
         try (Connection c = DBConnection.getConnection()) {
             PreparedStatement ps = c.prepareStatement("UPDATE services SET name=?, price=? WHERE id=?");
-            ps.setString(1, nameField.getText());
-            ps.setDouble(2, Double.parseDouble(priceField.getText()));
+            ps.setString(1, name);
+            ps.setDouble(2, Double.parseDouble(priceStr));
             ps.setInt(3, id);
             ps.executeUpdate();
+            
+            JOptionPane.showMessageDialog(this, "✅ Cập nhật dịch vụ thành công!");
             refreshData();
             clearFields();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Giá phải là một con số.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Giá phải là một con số hợp lệ (ví dụ: 50000).", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062) { 
+                 JOptionPane.showMessageDialog(this, "Lỗi: Tên dịch vụ này đã tồn tại.", "Trùng lặp dữ liệu", JOptionPane.ERROR_MESSAGE);
+            } else {
+                 JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật: " + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
+            }
+            e.printStackTrace();
         } catch (Exception e) { 
-            e.printStackTrace(); 
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -179,7 +220,7 @@ public class ServiceManager extends JPanel {
             return;
         }
         
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa dịch vụ này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa dịch vụ này?\n(Lưu ý: Không thể xóa nếu dịch vụ đã được sử dụng)", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
 
         int id = Integer.parseInt(model.getValueAt(row, 0).toString());
@@ -187,11 +228,20 @@ public class ServiceManager extends JPanel {
             PreparedStatement ps = c.prepareStatement("DELETE FROM services WHERE id=?");
             ps.setInt(1, id);
             ps.executeUpdate();
+            
+            JOptionPane.showMessageDialog(this, "✅ Đã xóa dịch vụ thành công.");
             refreshData();
             clearFields();
-        } catch (Exception e) { 
+        } catch (SQLException e) { 
+             if (e.getErrorCode() == 1451) { 
+                 JOptionPane.showMessageDialog(this, "Lỗi: Không thể xóa dịch vụ đã được sử dụng trong booking.", "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi khi xóa: " + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
+            }
             e.printStackTrace(); 
-            JOptionPane.showMessageDialog(this, "Không thể xóa dịch vụ đã được sử dụng.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -208,8 +258,10 @@ public class ServiceManager extends JPanel {
                 });
         } catch (Exception e) { 
             e.printStackTrace(); 
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải lại dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
         clearFields();
     }
 }
+
 

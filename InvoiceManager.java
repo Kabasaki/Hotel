@@ -1,4 +1,3 @@
-// InvoiceManager.java (Đã chỉnh sửa với layout mới)
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;

@@ -1,4 +1,3 @@
-// LogoutHandler.java (Không đổi)
 import javax.swing.*;
 
 public class LogoutHandler {

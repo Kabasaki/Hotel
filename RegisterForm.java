@@ -1,4 +1,3 @@
-// RegisterForm.java (Đã chỉnh sửa với giao diện đẹp hơn)
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;

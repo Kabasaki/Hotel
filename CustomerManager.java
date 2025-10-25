@@ -18,7 +18,7 @@ public class CustomerManager extends JPanel {
     private static final Font FONT_BUTTON = new Font("Segoe UI", Font.BOLD, 12);
     
     private static final Color COLOR_ADD = new Color(40, 167, 69);
-    private static final Color COLOR_UPDATE = new Color(255, 193, 7);
+    private static final Color COLOR_UPDATE = new Color(255, 152, 0); 
     private static final Color COLOR_DELETE = new Color(220, 53, 69);
     private static final Color COLOR_REFRESH = new Color(23, 162, 184);
     private static final Color COLOR_SEARCH = new Color(0, 123, 255);
@@ -33,7 +33,12 @@ public class CustomerManager extends JPanel {
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new String[]{"ID", "Tên KH", "SĐT", "Email", "Địa chỉ"}, 0);
+        model = new DefaultTableModel(new String[]{"ID", "Tên KH", "SĐT", "Email", "Địa chỉ"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        };
         table = new JTable(model);
         table.setFont(FONT_FIELD);
         table.setRowHeight(25);
@@ -59,12 +64,12 @@ public class CustomerManager extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(createLabel("Tên KH:"), gbc);
+        formPanel.add(createLabel("Tên KH (*):"), gbc);
         gbc.gridx = 1; gbc.gridy = 0;
         nameField = createTextField(); formPanel.add(nameField, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1;
-        formPanel.add(createLabel("SĐT:"), gbc);
+        formPanel.add(createLabel("SĐT (*):"), gbc);
         gbc.gridx = 1; gbc.gridy = 1;
         phoneField = createTextField(); formPanel.add(phoneField, gbc);
 
@@ -126,8 +131,8 @@ public class CustomerManager extends JPanel {
                 if (row != -1) {
                     nameField.setText(model.getValueAt(row, 1).toString());
                     phoneField.setText(model.getValueAt(row, 2).toString());
-                    emailField.setText(model.getValueAt(row, 3).toString());
-                    addrField.setText(model.getValueAt(row, 4).toString());
+                    emailField.setText(model.getValueAt(row, 3) != null ? model.getValueAt(row, 3).toString() : "");
+                    addrField.setText(model.getValueAt(row, 4) != null ? model.getValueAt(row, 4).toString() : "");
                 }
             }
         });
@@ -160,16 +165,38 @@ public class CustomerManager extends JPanel {
     }
 
     private void addCustomer() {
+        String name = nameField.getText().trim();
+        String phone = phoneField.getText().trim();
+        String email = emailField.getText().trim();
+        String address = addrField.getText().trim();
+
+        if (name.isEmpty() || phone.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên (*) và Số điện thoại (*) là bắt buộc.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+            return; 
+        }
+        
         try (Connection c = DBConnection.getConnection()) {
             PreparedStatement ps = c.prepareStatement("INSERT INTO customers (name, phone, email, address) VALUES (?, ?, ?, ?)");
-            ps.setString(1, nameField.getText());
-            ps.setString(2, phoneField.getText());
-            ps.setString(3, emailField.getText());
-            ps.setString(4, addrField.getText());
+            ps.setString(1, name);
+            ps.setString(2, phone);
+            ps.setString(3, email.isEmpty() ? null : email);
+            ps.setString(4, address.isEmpty() ? null : address);
             ps.executeUpdate();
+            
+            JOptionPane.showMessageDialog(this, "✅ Đã thêm khách hàng thành công!");
             refreshData();
             clearFields();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062) { 
+                 JOptionPane.showMessageDialog(this, "Lỗi: Số điện thoại hoặc Email đã tồn tại.", "Trùng lặp dữ liệu", JOptionPane.ERROR_MESSAGE);
+            } else {
+                 JOptionPane.showMessageDialog(this, "Lỗi khi thêm: " + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
+            }
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void updateCustomer() {
@@ -178,18 +205,41 @@ public class CustomerManager extends JPanel {
              JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng để sửa.", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        
+        String name = nameField.getText().trim();
+        String phone = phoneField.getText().trim();
+        String email = emailField.getText().trim();
+        String address = addrField.getText().trim();
+
+        if (name.isEmpty() || phone.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên (*) và Số điện thoại (*) là bắt buộc.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+            return; 
+        }
+        
         int id = Integer.parseInt(model.getValueAt(row, 0).toString());
         try (Connection c = DBConnection.getConnection()) {
             PreparedStatement ps = c.prepareStatement("UPDATE customers SET name=?, phone=?, email=?, address=? WHERE id=?");
-            ps.setString(1, nameField.getText());
-            ps.setString(2, phoneField.getText());
-            ps.setString(3, emailField.getText());
-            ps.setString(4, addrField.getText());
+            ps.setString(1, name);
+            ps.setString(2, phone);
+            ps.setString(3, email.isEmpty() ? null : email);
+            ps.setString(4, address.isEmpty() ? null : address);
             ps.setInt(5, id);
             ps.executeUpdate();
+            
+            JOptionPane.showMessageDialog(this, "✅ Cập nhật khách hàng thành công!");
             refreshData();
             clearFields();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062) { 
+                 JOptionPane.showMessageDialog(this, "Lỗi: Số điện thoại hoặc Email đã tồn tại.", "Trùng lặp dữ liệu", JOptionPane.ERROR_MESSAGE);
+            } else {
+                 JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật: " + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
+            }
+            e.printStackTrace();
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+            JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void deleteCustomer() {
@@ -198,7 +248,7 @@ public class CustomerManager extends JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng để xóa.", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa khách hàng này?\n(Lưu ý: Không thể xóa nếu khách hàng đã có booking)", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
         
         int id = Integer.parseInt(model.getValueAt(row, 0).toString());
@@ -206,14 +256,26 @@ public class CustomerManager extends JPanel {
             PreparedStatement ps = c.prepareStatement("DELETE FROM customers WHERE id=?");
             ps.setInt(1, id);
             ps.executeUpdate();
+            
+            JOptionPane.showMessageDialog(this, "✅ Đã xóa khách hàng thành công.");
             refreshData();
             clearFields();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+             if (e.getErrorCode() == 1451) { // Lỗi Foreign Key Constraint
+                 JOptionPane.showMessageDialog(this, "Lỗi: Không thể xóa khách hàng đã có booking.", "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi khi xóa: " + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
+            }
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+             JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void searchCustomer() {
         try (Connection c = DBConnection.getConnection()) {
-            String key = "%" + searchField.getText() + "%";
+            String key = "%" + searchField.getText().trim() + "%";
             PreparedStatement ps = c.prepareStatement("SELECT * FROM customers WHERE name LIKE ? OR phone LIKE ? OR email LIKE ?");
             ps.setString(1, key);
             ps.setString(2, key);
@@ -222,7 +284,10 @@ public class CustomerManager extends JPanel {
             model.setRowCount(0);
             while (rs.next())
                 model.addRow(new Object[]{rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5)});
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+            JOptionPane.showMessageDialog(this, "Lỗi khi tìm kiếm: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void refreshData() {
@@ -232,7 +297,10 @@ public class CustomerManager extends JPanel {
             model.setRowCount(0);
             while (rs.next())
                 model.addRow(new Object[]{rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5)});
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải lại dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
         clearFields();
     }
     
@@ -241,6 +309,8 @@ public class CustomerManager extends JPanel {
         phoneField.setText("");
         emailField.setText("");
         addrField.setText("");
+        searchField.setText("");
         table.clearSelection();
     }
 }
+

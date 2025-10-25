@@ -6,8 +6,7 @@ import java.sql.Statement;
 public class DBConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/";
     private static final String USER = "root";
-    private static final String PASS = ""; // Mật khẩu rỗng
-
+    private static final String PASS = ""; 
     private static final String DB_NAME = "hotel_management";
 
     public static Connection getConnection() throws SQLException {
