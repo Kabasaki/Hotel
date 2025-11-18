@@ -123,7 +123,7 @@ public class LoginForm extends JFrame {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                String role = "User"; // Vai trò mặc định nếu không tìm thấy
+                String role = "User"; 
                 String roleSql = "SELECT r.role_name FROM employees e JOIN roles r ON e.role_id = r.id WHERE e.username = ?";
                 PreparedStatement rolePs = conn.prepareStatement(roleSql);
                 rolePs.setString(1, username);
@@ -161,4 +161,5 @@ public class LoginForm extends JFrame {
         SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
     }
 }
+
 
