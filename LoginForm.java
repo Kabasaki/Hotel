@@ -1,4 +1,3 @@
-// LoginForm.java (Đã chỉnh sửa với giao diện đẹp hơn)
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -11,14 +10,12 @@ public class LoginForm extends JFrame {
     private JButton loginBtn;
     private JButton registerBtn;
 
-    // Màu sắc
     private static final Color PRIMARY_COLOR = new Color(25, 118, 210);
     private static final Color SECONDARY_COLOR = new Color(108, 117, 125);
     private static final Color BACKGROUND_COLOR = new Color(248, 249, 250);
     private static final Color TEXT_COLOR = new Color(33, 37, 41);
     private static final Color ERROR_COLOR = new Color(220, 53, 69);
 
-    // Fonts
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 24);
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_FIELD = new Font("Segoe UI", Font.PLAIN, 14);
@@ -26,7 +23,7 @@ public class LoginForm extends JFrame {
 
     public LoginForm() {
         setTitle("Đăng nhập hệ thống");
-        setSize(650, 600); // Tăng kích thước
+        setSize(650, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
@@ -164,3 +161,4 @@ public class LoginForm extends JFrame {
         SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
     }
 }
+
